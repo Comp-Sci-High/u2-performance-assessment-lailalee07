@@ -7,51 +7,69 @@ let textAudioUrl = "https://api.openai.com/v1/audio/speech";
 const speechFile = path.resolve("./speech.mp3");
 
 async function chatBot(description) {
+  try {
+    
     const textAudio = {
-        model:"tts-1",
-        input:description,
-        voice:"echo",
-        response_format:"mp3"
+      model: "tts-1",
+      input: description,
+      voice: "echo",
+      response_format: "mp3"
     }
 
+    // console.log(textAudio)
 
+    const options = {
+      method: 'POST',
+      headers: {
+        Authorization: 'Bearer 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',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(textAudio)
+    };
 
-const options = {
-    method: 'POST',
-headers: {
-  Authorization: 'Bearer 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',
-'Content-Type': 'application/json',
-},
-body: JSON.stringify(textAudio)
-  };
+    const response = await fetch(textAudioUrl, options);
+    if (response.ok === false) {
+      console.log("HTTP error! Status:" + response.status);
+    }
 
-  const response = await fetch(textAudioUrl, options);
+    // https://platform.openai.com/docs/api-reference/audio/createSpeech?lang=node
+    const buffer = Buffer.from(await response.arrayBuffer());
+    await fs.promises.writeFile(speechFile, buffer);
 
-  // https://platform.openai.com/docs/api-reference/audio/createSpeech?lang=node
-  const buffer = Buffer.from(await response.arrayBuffer());
-  await fs.promises.writeFile(speechFile, buffer);
+    // const data = await response.json();
+    // console.log(response);
+    // return data;
+  } catch (error) {
+    console.log("An error occurred in chatBot " + error.message);
+  }
+}
 
-//   const data = await response.json();
-//   console.log(response); 
-//   return data;
+async function requestUrl(category) {
+  try {
+
+    let requestUrl2 = "http://makeup-api.herokuapp.com/api/v1/products.json?product_type=" + category
+
+    const response = await fetch(requestUrl2)
+    const data = await response.json()
+    console.log("A product that you can use is " + data[0].name)
+    console.log("The brand is " + data[1].brand)
+    if (response.ok === false) {
+      console.log("Status:" + response.status);
+    }
+    // Return the message to be read by text to speech
+    return "A product that you can use is " + data[0].name + "The brand is " + data[1].brand
+  } catch (error) {
+    console.log("An error occurred" + error.message);
+  }
+
 }
 async function main() {
-let userPrompt = prompt("What make up products do you have")
-await chatBot(userPrompt)
-
+  // Console log welcome message
+  console.log("Welcome to text to speeh find make up")
+  let userPrompt2 = prompt("What product do you want?")
+  // Add await and save the result in a variable
+  let result = await requestUrl(userPrompt2)
+// Pass the result from requestUrl into chatbot
+  await chatBot(result)
 }
 main()
-
-
-let requestUrl = "http://makeup-api.herokuapp.com/api/v1/products.json?brand=maybelline"
-
-async function requestUrl() {
-    const response = await fetch(requestUrl)
-    const data = await response.json()
-    console.log(data.data[0].title)
-    console.log(data.data[1].title)
-    console.log(data.data[2].title)
-
-
-        return data
- }
