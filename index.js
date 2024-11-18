@@ -21,7 +21,7 @@ async function chatBot(description) {
     const options = {
       method: 'POST',
       headers: {
-        Authorization: 'Bearer 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',
+        Authorization: 'Bearer ...',
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(textAudio)
